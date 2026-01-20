@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Converter App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #333;
+    }
+    .card {
+      background: #fff;
+      padding: 25px;
+      width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: none;
+    }
+    .card.active {
+      display: block;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #5a67d8;
+    }
+    .note {
+      font-size: 12px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Page -->
+  <div class="card active" id="loginCard">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p class="note">Demo login (no backend)</p>
+  </div>
+
+  <!-- File Converter Page -->
+  <div class="card" id="converterCard">
+    <h2>File Converter</h2>
+    <input type="file" id="fileInput" />
+    <select id="format">
+      <option value="txt">Convert to TXT</option>
+      <option value="json">Convert to JSON</option>
+    </select>
+    <button onclick="convertFile()">Convert</button>
+    <p class="note">Client-side basic conversion</p>
+  </div>
+
+  <script>
+    function login() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+
+      if (user && pass) {
+        document.getElementById('loginCard').classList.remove('active');
+        document.getElementById('converterCard').classList.add('active');
+      } else {
+        alert('Please enter username and password');
+      }
+    }
+
+    function convertFile() {
+      const fileInput = document.getElementById('fileInput');
+      const format = document.getElementById('format').value;
+
+      if (!fileInput.files.length) {
+        alert('Please select a file');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        let content = e.target.result;
+        let output;
+
+        if (format === 'json') {
+          output = JSON.stringify({ data: content }, null, 2);
+        } else {
+          output = content;
+        }
+
+        const blob = new Blob([output], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = file.name.split('.')[0] + '.' + format;
+        a.click();
+      };
+
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
