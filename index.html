@@ -53,6 +53,21 @@
       text-align: center;
       color: #666;
     }
+    .spinner {
+  border: 4px solid #eee;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  animation: spin 1s linear infinite;
+  margin: 10px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
   </style>
 </head>
 <body>
@@ -74,62 +89,104 @@
       <option value="txt">Convert to TXT</option>
       <option value="json">Convert to JSON</option>
     </select>
-    <button onclick="convertFile()">Convert</button>
+    <button id="convertBtn" onclick="convertFile()">Convert</button>
+     <p id="status" class="note"></p>
+
     
   </div>
 
   <script>
-    const API_URL = "https://file-converter-backend-0tg6.onrender.com/convert";
+   
+const API_URL = "https://file-converter-backend-0tg6.onrender.com/uploads";
 
-  function login() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
+function login() {
+  const user = document.getElementById('username').value;
+  const pass = document.getElementById('password').value;
 
-    if (user && pass) {
-      document.getElementById('loginCard').classList.remove('active');
-      document.getElementById('converterCard').classList.add('active');
-    } else {
-      alert('Please enter username and password');
-    }
+  if (user && pass) {
+    document.getElementById('loginCard').classList.remove('active');
+    document.getElementById('converterCard').classList.add('active');
+  } else {
+    alert('Please enter username and password');
+  }
+}
+
+async function convertFile() {
+  const fileInput = document.getElementById('fileInput');
+
+  // ✅ 1. Check if file exists FIRST
+  if (!fileInput.files.length) {
+    alert("Please select a file");
+    return;
   }
 
-  async function convertFile() {
-    const fileInput = document.getElementById('fileInput');
-    const format = document.getElementById('format').value;
+  const file = fileInput.files[0];
 
-    if (!fileInput.files.length) {
-      alert('Please select a file');
-      return;
-    }
+  // ✅ 2. File validation
+  const allowedTypes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+    "image/png",
+    "image/jpeg"
+  ];
 
-    const formData = new FormData();
-    formData.append("file", fileInput.files[0]);
-    formData.append("format", format);
+  const maxSize = 5 * 1024 * 1024; // 5MB
 
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        body: formData
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Upload failed");
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "converted." + format;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } catch (error) {
-      alert("Error: " + error.message);
-    }
+  if (!allowedTypes.includes(file.type)) {
+    alert("Invalid file type. Upload PDF, DOCX, TXT, JPG or PNG.");
+    return;
   }
+
+  if (file.size > maxSize) {
+    alert("File size exceeds 5MB limit.");
+    return;
+  }
+
+  const format = document.getElementById('format').value;
+
+  // ✅ 3. Send to backend
+  // STEP 2: show spinner + disable button
+  const status = document.getElementById("status");
+  const btn = document.getElementById("convertBtn");
+
+  status.innerHTML = '<div class="spinner"></div><p>Converting...</p>';
+  btn.disabled = true;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("format", format);
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "Upload failed");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "converted." + format;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // STEP 3: success message + enable button
+    status.textContent = "Conversion successful ✅";
+    btn.disabled = false;
+
+  } catch (error) {
+    status.textContent = "Conversion failed ❌";
+    btn.disabled = false;
+    alert("Error: " + error.message);
+  }
+}
   </script>
 </body>
 </html>
