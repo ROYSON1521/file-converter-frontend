@@ -79,49 +79,57 @@
   </div>
 
   <script>
-    function login() {
-      const user = document.getElementById('username').value;
-      const pass = document.getElementById('password').value;
+    const API_URL = "https://file-converter-backend-0tg6.onrender.com/uploads";
 
-      if (user && pass) {
-        document.getElementById('loginCard').classList.remove('active');
-        document.getElementById('converterCard').classList.add('active');
-      } else {
-        alert('Please enter username and password');
-      }
+  function login() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+
+    if (user && pass) {
+      document.getElementById('loginCard').classList.remove('active');
+      document.getElementById('converterCard').classList.add('active');
+    } else {
+      alert('Please enter username and password');
+    }
+  }
+
+  async function convertFile() {
+    const fileInput = document.getElementById('fileInput');
+    const format = document.getElementById('format').value;
+
+    if (!fileInput.files.length) {
+      alert('Please select a file');
+      return;
     }
 
-    function convertFile() {
-      const fileInput = document.getElementById('fileInput');
-      const format = document.getElementById('format').value;
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+    formData.append("format", format);
 
-      if (!fileInput.files.length) {
-        alert('Please select a file');
-        return;
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || "Upload failed");
       }
 
-      const file = fileInput.files[0];
-      const reader = new FileReader();
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
-      reader.onload = function(e) {
-        let content = e.target.result;
-        let output;
-
-        if (format === 'json') {
-          output = JSON.stringify({ data: content }, null, 2);
-        } else {
-          output = content;
-        }
-
-        const blob = new Blob([output], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = file.name.split('.')[0] + '.' + format;
-        a.click();
-      };
-
-      reader.readAsText(file);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "converted." + format;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      alert("Error: " + error.message);
     }
+  }
   </script>
 </body>
 </html>
