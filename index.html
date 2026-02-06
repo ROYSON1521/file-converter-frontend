@@ -84,10 +84,8 @@
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
-    <input type="file" id="fileInput" />
+    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg"/>
     <select id="format">
-      <option value="txt">Convert to TXT</option>
-      <option value="json">Convert to JSON</option>
       <option value="txt_to_pdf">TXT → PDF</option>
       <option value="txt_to_docx">TXT → DOCX</option>
       <option value="pdf_to_txt">PDF → TXT</option>
@@ -95,8 +93,7 @@
       <option value="pdf_to_docx">PDF → DOCX</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
-     <p id="status" class="note"></p>
-
+     <div id="status" class="note"></div>
     
   </div>
 
