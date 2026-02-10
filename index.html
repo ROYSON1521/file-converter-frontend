@@ -45,9 +45,7 @@
       color: white;
       border: none;
       cursor: pointer;
-      button {
-        margin-top: 12px;
-      }
+      margin-top: 12px;
     }
     button:hover {
       background: #5a67d8;
@@ -66,6 +64,10 @@
       animation: spin 1s linear infinite;
       margin: 10px auto;
 }
+body, .card, input, select, button {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 /* 🌙 Dark mode styles */
 body.dark {
   background: linear-gradient(135deg, #1f2933, #111827);
@@ -186,14 +188,6 @@ body.dark .note {
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
     <p class="note" id="welcomeUser"></p>
-    <div class="theme-toggle">
-  <label class="switch">
-    <input type="checkbox" id="themeSwitch" onchange="toggleTheme()">
-    <span class="slider"></span>
-  </label>
-</div>
-
-    <button onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg"/>
     <select id="format">
       <option value="txt_to_pdf">TXT → PDF</option>
@@ -203,7 +197,7 @@ body.dark .note {
       <option value="pdf_to_docx">PDF → DOCX</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
-    <button id="logoutBtn" onclick="logout()">Logout</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
     <div id="status" class="note"></div>
     
   </div>
@@ -223,18 +217,13 @@ const extMap = {
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
 window.addEventListener("DOMContentLoaded", () => {
   // 🌗 sync theme toggle
-const savedTheme = localStorage.getItem("theme");
+   const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") {
   document.body.classList.add("dark");
-  const toggle = document.getElementById("themeSwitch");
-  if (toggle) toggle.checked = true;
+  document.getElementById("themeSwitch").checked = true;
 }
 
-  // 🌗 apply saved theme
-  if (localStorage.getItem("theme") === "dark") {
-    document.body.classList.add("dark");
-  }
-
+// ✅ auto-login check
   if (localStorage.getItem("loggedIn") === "true") {
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("registerCard").classList.remove("active");
@@ -284,19 +273,21 @@ async function login() {
     localStorage.setItem("loggedIn", "true");
   
     if (!res.ok) throw new Error(data.message);
-    
+   
     document.getElementById("welcomeUser").textContent = "Welcome, " + user;
-
+    document.getElementById("logoutBtn").style.display = "block";
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
   } catch (err) {
     alert("Login failed: " + err.message);
   }
 }
 
 async function register() {
-  const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
+  const user = document.getElementById("registerUsername").value.trim();
+  const pass = document.getElementById("registerPassword").value.trim();
 
   if (!user || !pass) {
     alert("Enter username and password");
@@ -314,7 +305,9 @@ async function register() {
     if (!res.ok) throw new Error(data.message);
 
     alert("Registration successful. Please login.");
-    showLogin();
+    document.getElementById("registerUsername").value = "";
+    document.getElementById("registerPassword").value = "";
+    showLogin(); 
 
   } catch (err) {
     alert("Registration failed: " + err.message);
@@ -330,16 +323,16 @@ function logout() {
   document.getElementById("converterCard").classList.remove("active");
   document.getElementById("registerCard").classList.remove("active");
   document.getElementById("loginCard").classList.add("active");
-}
-
-//session check before conversion
-if (!localStorage.getItem("token")) {
-  alert("Session expired. Please login again.");
-  logout();
-  return;
+  document.getElementById("themeSwitch").checked = document.body.classList.contains("dark");
 }
 
 async function convertFile() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("Session expired. Please login again.");
+        logout();
+     return;
+    }
   const fileInput = document.getElementById('fileInput');
 
   // ✅ 1. Check if file exists FIRST
@@ -383,7 +376,7 @@ async function convertFile() {
   status.innerHTML = '<div class="spinner"></div><p>Converting...</p>';
   btn.disabled = true;
   logoutBtn.disabled = true;
-
+  
   const formData = new FormData();
   formData.append("file", file);
   formData.append("format", format);
@@ -408,18 +401,20 @@ async function convertFile() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${originalName}_converted.${extMap[format]}`;
+    a.download = `${originalName}.${extMap[format]}`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     // STEP 3: success message + enable button
     status.textContent = "Conversion successful ✅";
     btn.disabled = false;
+    logoutBtn.disabled = false;
     logoutBtn.style.display = "block";
 
   } catch (error) {
     status.textContent = "Conversion failed ❌";
     btn.disabled = false;
+    logoutBtn.disabled = false;
     logoutBtn.style.display = "block";
     alert("Error: " + error.message);
   }
