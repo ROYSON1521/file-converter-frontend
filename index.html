@@ -9,7 +9,7 @@
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #667eea, #764ba2);
       margin: 0;
-      padding: 0;
+      padding-top: 70px;
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -155,10 +155,74 @@ body.dark .note {
   transform: translateX(26px);
   content: "🌙";
 }
+/* 🌐 Top bar */
+#topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 12px 20px;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  z-index: 1000;
+  display: none;
+}
+
+/* Welcome text */
+#welcomeUser {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Dark mode welcome text */
+body.dark #welcomeUser {
+  color: #e5e7eb;
+}
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Logout button */
+#logoutBtn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#logoutBtn:hover {
+  background: #dc2626;
+}
+
+/* Dark mode logout */
+body.dark #logoutBtn {
+  background: #b91c1c;
+}
 
   </style>
 </head>
 <body>
+  
+  <!-- 🌐 Top Bar -->
+<div id="topBar">
+  <div id="welcomeUser"></div>
+
+  <div class="theme-toggle">
+    <label class="switch">
+      <input type="checkbox" id="themeSwitch" onchange="toggleTheme()">
+      <span class="slider"></span>
+    </label>
+    <!-- 🚪 Logout -->
+    <button id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+</div>
 
   <!-- Login Page -->
   <div class="card active" id="loginCard">
@@ -187,7 +251,6 @@ body.dark .note {
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
-    <p class="note" id="welcomeUser"></p>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg"/>
     <select id="format">
       <option value="txt_to_pdf">TXT → PDF</option>
@@ -197,7 +260,6 @@ body.dark .note {
       <option value="pdf_to_docx">PDF → DOCX</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
-    <button id="logoutBtn" onclick="logout()" style="display:none;">Logout</button>
     <div id="status" class="note"></div>
     
   </div>
@@ -228,7 +290,7 @@ if (savedTheme === "dark") {
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("registerCard").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
-
+    document.getElementById("topBar").style.display = "flex";
     document.getElementById("welcomeUser").textContent =
       "Welcome, " + localStorage.getItem("username");
   }
@@ -278,6 +340,7 @@ async function login() {
     document.getElementById("logoutBtn").style.display = "block";
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
+    document.getElementById("topBar").style.display = "flex";
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
   } catch (err) {
@@ -324,6 +387,7 @@ function logout() {
   document.getElementById("registerCard").classList.remove("active");
   document.getElementById("loginCard").classList.add("active");
   document.getElementById("themeSwitch").checked = document.body.classList.contains("dark");
+  document.getElementById("topBar").style.display = "none";
 }
 
 async function convertFile() {
@@ -409,13 +473,11 @@ async function convertFile() {
     status.textContent = "Conversion successful ✅";
     btn.disabled = false;
     logoutBtn.disabled = false;
-    logoutBtn.style.display = "block";
 
   } catch (error) {
     status.textContent = "Conversion failed ❌";
     btn.disabled = false;
     logoutBtn.disabled = false;
-    logoutBtn.style.display = "block";
     alert("Error: " + error.message);
   }
 }
