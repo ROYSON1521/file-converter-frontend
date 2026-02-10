@@ -23,6 +23,7 @@
       border-radius: 10px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       display: none;
+      animation: fade 0.3s ease-in-out;
     }
     .card.active {
       display: block;
@@ -44,6 +45,9 @@
       color: white;
       border: none;
       cursor: pointer;
+      button {
+        margin-top: 12px;
+      }
     }
     button:hover {
       background: #5a67d8;
@@ -54,19 +58,102 @@
       color: #666;
     }
     .spinner {
-  border: 4px solid #eee;
-  border-top: 4px solid #667eea;
-  border-radius: 50%;
-  width: 25px;
-  height: 25px;
-  animation: spin 1s linear infinite;
-  margin: 10px auto;
+      border: 4px solid #eee;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+}
+/* 🌙 Dark mode styles */
+body.dark {
+  background: linear-gradient(135deg, #1f2933, #111827);
+  color: #e5e7eb;
+}
+
+body.dark .card {
+  background: #1f2933;
+  color: #e5e7eb;
+}
+
+body.dark input,
+body.dark select {
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+body.dark button {
+  background: #4f46e5;
+}
+
+body.dark .note {
+  color: #9ca3af;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+@keyframes fade {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* 🌗 Theme toggle switch */
+.theme-toggle {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 15px;
+}
+
+.switch {
+  position: relative;
+  width: 52px;
+  height: 26px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #cbd5e1;
+  border-radius: 34px;
+  transition: background-color 0.3s;
+}
+
+.slider::before {
+  content: "🌞";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+  font-size: 14px;
+}
+
+/* checked = dark mode */
+.switch input:checked + .slider {
+  background-color: #4f46e5;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(26px);
+  content: "🌙";
+}
+
   </style>
 </head>
 <body>
@@ -98,6 +185,15 @@
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
+    <p class="note" id="welcomeUser"></p>
+    <div class="theme-toggle">
+  <label class="switch">
+    <input type="checkbox" id="themeSwitch" onchange="toggleTheme()">
+    <span class="slider"></span>
+  </label>
+</div>
+
+    <button onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg"/>
     <select id="format">
       <option value="txt_to_pdf">TXT → PDF</option>
@@ -107,7 +203,7 @@
       <option value="pdf_to_docx">PDF → DOCX</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
-    <button onclick="logout()">Logout</button>
+    <button id="logoutBtn" onclick="logout()">Logout</button>
     <div id="status" class="note"></div>
     
   </div>
@@ -126,12 +222,36 @@ const extMap = {
 
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
 window.addEventListener("DOMContentLoaded", () => {
+  // 🌗 sync theme toggle
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+  document.body.classList.add("dark");
+  const toggle = document.getElementById("themeSwitch");
+  if (toggle) toggle.checked = true;
+}
+
+  // 🌗 apply saved theme
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark");
+  }
+
   if (localStorage.getItem("loggedIn") === "true") {
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("registerCard").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
+
+    document.getElementById("welcomeUser").textContent =
+      "Welcome, " + localStorage.getItem("username");
   }
 });
+
+// 🌗 Dark / Light mode toggle
+function toggleTheme() {
+  const isDark = document.body.classList.toggle("dark");
+
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  document.getElementById("themeSwitch").checked = isDark;
+}
 
 // 🔁 STEP 2: page switching logic
 function showRegister() {
@@ -160,8 +280,13 @@ async function login() {
     });
     const data = await res.json();
     localStorage.setItem("token", data.token);
+    localStorage.setItem("username", user);
+    localStorage.setItem("loggedIn", "true");
+  
     if (!res.ok) throw new Error(data.message);
     
+    document.getElementById("welcomeUser").textContent = "Welcome, " + user;
+
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
   } catch (err) {
@@ -200,6 +325,7 @@ async function register() {
 function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("loggedIn");
+  localStorage.removeItem("username");
 
   document.getElementById("converterCard").classList.remove("active");
   document.getElementById("registerCard").classList.remove("active");
@@ -252,9 +378,11 @@ async function convertFile() {
   // STEP 2: show spinner + disable button
   const status = document.getElementById("status");
   const btn = document.getElementById("convertBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
 
   status.innerHTML = '<div class="spinner"></div><p>Converting...</p>';
   btn.disabled = true;
+  logoutBtn.disabled = true;
 
   const formData = new FormData();
   formData.append("file", file);
@@ -287,10 +415,12 @@ async function convertFile() {
     // STEP 3: success message + enable button
     status.textContent = "Conversion successful ✅";
     btn.disabled = false;
+    logoutBtn.style.display = "block";
 
   } catch (error) {
     status.textContent = "Conversion failed ❌";
     btn.disabled = false;
+    logoutBtn.style.display = "block";
     alert("Error: " + error.message);
   }
 }
