@@ -68,13 +68,6 @@
   100% { transform: rotate(360deg); }
 }
   </style>
-  
-  <script>
-    if (localStorage.getItem("loggedIn") === "true") {
-      document.getElementById("loginCard").classList.remove("active");
-      document.getElementById("converterCard").classList.add("active");
-    }
-  </script>
 </head>
 <body>
 
@@ -83,10 +76,24 @@
     <h2>Login</h2>
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password" />
-    <button onclick="register()">Register</button>
     <button onclick="login()">Login</button>
-    
+     <p class="note">
+    Don’t have an account?
+    <a href="#" onclick="showRegister()">Register</a>
+  </p>
   </div>
+
+   <!-- Register Page -->
+<div class="card" id="registerCard">
+  <h2>Register</h2>
+  <input type="text" id="registerUsername" placeholder="Username" />
+  <input type="password" id="registerPassword" placeholder="Password" />
+  <button onclick="register()">Register</button>
+  <p class="note">
+    Already have an account?
+    <a href="#" onclick="showLogin()">Login</a>
+  </p>
+</div>
 
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
@@ -116,6 +123,26 @@ const extMap = {
   pdf_to_docx: "docx"
 };
 
+// 🔒 Bonus fix: auto-login after refresh (DOM safe)
+window.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("loggedIn") === "true") {
+    document.getElementById("loginCard").classList.remove("active");
+    document.getElementById("registerCard").classList.remove("active");
+    document.getElementById("converterCard").classList.add("active");
+  }
+});
+
+// 🔁 STEP 2: page switching logic
+function showRegister() {
+  document.getElementById("loginCard").classList.remove("active");
+  document.getElementById("registerCard").classList.add("active");
+}
+
+function showLogin() {
+  document.getElementById("registerCard").classList.remove("active");
+  document.getElementById("loginCard").classList.add("active");
+}
+
 async function login() {
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
@@ -132,7 +159,7 @@ async function login() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
-    localStorage.setItem("loggedIn", "true");
+    
     document.getElementById("loginCard").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
   } catch (err) {
@@ -157,10 +184,10 @@ async function register() {
     });
 
     const data = await res.json();
-
     if (!res.ok) throw new Error(data.message);
 
     alert("Registration successful. Please login.");
+    showLogin();
 
   } catch (err) {
     alert("Registration failed: " + err.message);
