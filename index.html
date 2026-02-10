@@ -20,6 +20,7 @@
       background: #fff;
       padding: 25px;
       width: 350px;
+      margin-top: 20px;
       border-radius: 10px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       display: none;
@@ -103,16 +104,11 @@ body.dark .note {
   to { opacity: 1; transform: scale(1); }
 }
 /* 🌗 Theme toggle switch */
-.theme-toggle {
-  display: flex;
-  justify-content: center;
-  margin: 10px 0 15px;
-}
 
 .switch {
   position: relative;
-  width: 52px;
-  height: 26px;
+  width: 64px;
+  height: 32px;
 }
 
 .switch input {
@@ -131,10 +127,10 @@ body.dark .note {
 }
 
 .slider::before {
-  content: "🌞";
+  content: "🥵";
   position: absolute;
-  height: 22px;
-  width: 22px;
+  height: 28px;
+  width: 28px;
   left: 2px;
   bottom: 2px;
   background-color: white;
@@ -143,7 +139,7 @@ body.dark .note {
   align-items: center;
   justify-content: center;
   transition: transform 0.3s;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 /* checked = dark mode */
@@ -152,8 +148,8 @@ body.dark .note {
 }
 
 .switch input:checked + .slider::before {
-  transform: translateX(26px);
-  content: "🌙";
+  transform: translateX(32px);
+  content: "🥶";
 }
 /* 🌐 Top bar */
 #topBar {
@@ -183,7 +179,7 @@ body.dark #welcomeUser {
 .top-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 /* Logout button */
@@ -214,7 +210,7 @@ body.dark #logoutBtn {
 <div id="topBar">
   <div id="welcomeUser"></div>
 
-  <div class="theme-toggle">
+  <div class="top-actions">
     <label class="switch">
       <input type="checkbox" id="themeSwitch" onchange="toggleTheme()">
       <span class="slider"></span>
