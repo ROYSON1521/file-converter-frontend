@@ -374,6 +374,8 @@ async function login() {
     document.getElementById("topBar").style.display = "flex";
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
+    document.getElementById("fileInput").value = "";
+    document.getElementById("status").textContent = "";
   } catch (err) {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedIn");
@@ -422,6 +424,8 @@ function logout() {
   document.getElementById("loginCard").classList.add("active");
   document.getElementById("themeSwitch").checked = document.body.classList.contains("dark");
   document.getElementById("topBar").style.display = "none";
+  document.getElementById("fileInput").value = "";
+  document.getElementById("status").textContent = "";
 }
 
 async function convertFile() {
@@ -475,6 +479,7 @@ async function convertFile() {
   const status = document.getElementById("status");
   const btn = document.getElementById("convertBtn");
   const logoutBtn = document.getElementById("logoutBtn");
+  fileInput.disabled = true;
 
   status.innerHTML = '<div class="spinner"></div><p>Converting...</p>';
   btn.disabled = true;
@@ -508,13 +513,17 @@ async function convertFile() {
     document.body.appendChild(a);
     a.click();
     a.remove();
+    window.URL.revokeObjectURL(url);
+    fileInput.value = "";
     // STEP 3: success message + enable button
     status.textContent = "Conversion successful ✅";
+    fileInput.disabled = false;
     btn.disabled = false;
     logoutBtn.disabled = false;
 
   } catch (error) {
     status.textContent = "Conversion failed ❌";
+    fileInput.disabled = false;
     btn.disabled = false;
     logoutBtn.disabled = false;
     alert("Error: " + error.message);
