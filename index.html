@@ -30,6 +30,9 @@
     .file-float.one { left: max(7%, calc(50% - 540px)); top: 25%; }
     .file-float.two { right: max(8%, calc(50% - 540px)); top: 19%; animation-delay: -2.5s; }
     .file-float.three { right: max(13%, calc(50% - 570px)); bottom: 12%; animation-delay: -4.5s; }
+    .file-float.four { left: 3%; bottom: 15%; width: 124px; height: 146px; animation-delay: -1.5s; }
+    .file-float.five { right: 3%; top: 52%; width: 124px; height: 146px; animation-delay: -3.5s; }
+    .file-float.six { left: 28%; top: 8%; width: 118px; height: 138px; animation-delay: -5.5s; }
     .file-badge { display: grid; place-items: center; width: 48px; height: 56px; border-radius: 11px; color: white; background: #ef4943; font-size: 11px; font-weight: 800; letter-spacing: .5px; }
     .file-float.two .file-badge { background: #4988e8; }
     .file-float.three .file-badge { background: #8a62d7; }
@@ -54,6 +57,10 @@
     .card.active {
       display: block;
     }
+    .login-stack { display: none; position: relative; z-index: 2; width: min(100%, 390px); }
+    .login-stack.active { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    .login-stack .card { width: 100%; margin: 0; }
+    .brand-title { margin: 0; color: #d8322c; font-family: "Trebuchet MS", "Segoe UI", sans-serif; font-size: clamp(29px, 4vw, 40px); font-weight: 900; letter-spacing: .14em; line-height: 1.1; text-align: center; text-shadow: 0 8px 22px rgba(216,50,44,.17); }
     h2 {
       text-align: center;
       margin: 0 0 22px;
@@ -269,6 +276,8 @@ input[type="file"] {
       .file-float.one { left: -25px; top: 12%; }
       .file-float.two { right: -28px; top: 11%; }
       .file-float.three { right: -18px; bottom: 5%; }
+      .file-float.four, .file-float.five { opacity: .3; scale: .62; }
+      .file-float.six { display: none; }
       .card { padding: 26px 22px; }
     }
     @media (prefers-reduced-motion: reduce) {
@@ -283,6 +292,9 @@ input[type="file"] {
     <div class="file-float one"><div class="file-badge">PDF</div><div class="file-lines"><i></i><i></i><i></i></div></div>
     <div class="file-float two"><div class="file-badge">DOCX</div><div class="file-lines"><i></i><i></i><i></i></div></div>
     <div class="file-float three"><div class="file-badge">AUDIO</div><div class="file-lines"><i></i><i></i><i></i></div></div>
+    <div class="file-float four"><div class="file-badge">PPTX</div><div class="file-lines"><i></i><i></i><i></i></div></div>
+    <div class="file-float five"><div class="file-badge">PNG</div><div class="file-lines"><i></i><i></i><i></i></div></div>
+    <div class="file-float six"><div class="file-badge">MP3</div><div class="file-lines"><i></i><i></i><i></i></div></div>
   </div>
   
   <!-- 🌐 Top Bar -->
@@ -300,9 +312,10 @@ input[type="file"] {
 </div>
 
   <!-- Login Page -->
+  <div class="login-stack active" id="loginStack">
+  <h1 class="brand-title">FILERALUV</h1>
   <div class="card active" id="loginCard">
     <h2>Login</h2>
-    <p class="auth-message" id="loginMessage" role="status" aria-live="polite"></p>
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
@@ -310,6 +323,7 @@ input[type="file"] {
     Don’t have an account?
     <a href="#" onclick="showRegister()">Register</a>
   </p>
+  </div>
   </div>
 
    <!-- Register Page -->
@@ -392,6 +406,7 @@ if (savedTheme === "dark") {
   document.getElementById("converterCard").classList.remove("active");
   document.getElementById("registerCard").classList.remove("active");
   document.getElementById("loginCard").classList.add("active");
+  document.getElementById("loginStack").classList.add("active");
   document.getElementById("topBar").style.display = "none";
 });
 
@@ -407,19 +422,17 @@ function toggleTheme() {
 function showRegister() {
   document.getElementById("username").value = "";
   document.getElementById("password").value = "";
-  document.getElementById("loginMessage").className = "auth-message";
   document.getElementById("registerMessage").className = "auth-message";
-  document.getElementById("loginCard").classList.remove("active");
+  document.getElementById("loginStack").classList.remove("active");
   document.getElementById("registerCard").classList.add("active");
 }
 
 function showLogin() {
   document.getElementById("registerUsername").value = "";
   document.getElementById("registerPassword").value = "";
-  document.getElementById("loginMessage").className = "auth-message";
   document.getElementById("registerMessage").className = "auth-message";
   document.getElementById("registerCard").classList.remove("active");
-  document.getElementById("loginCard").classList.add("active");
+  document.getElementById("loginStack").classList.add("active");
 }
 
 async function login() {
@@ -446,14 +459,13 @@ async function login() {
    
     document.getElementById("welcomeUser").textContent = "Welcome, " + user;
     document.getElementById("logoutBtn").style.display = "block";
-    document.getElementById("loginCard").classList.remove("active");
+    document.getElementById("loginStack").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
     document.getElementById("topBar").style.display = "flex";
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
     document.getElementById("fileInput").value = "";
     document.getElementById("status").textContent = "";
-    document.getElementById("loginMessage").className = "auth-message";
   } catch (err) {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedIn");
@@ -483,16 +495,13 @@ async function register() {
 
     const registerMessage = document.getElementById("registerMessage");
     const registerButton = document.querySelector("#registerCard button");
-    registerMessage.textContent = "Registration successful. Redirecting to login...";
+    registerMessage.textContent = "Registration successful. You can log in now. Redirecting...";
     registerMessage.className = "auth-message success visible";
     registerButton.disabled = true;
     setTimeout(() => {
       registerButton.disabled = false;
       showLogin();
-      const loginMessage = document.getElementById("loginMessage");
-      loginMessage.textContent = "Registration successful. Please log in.";
-      loginMessage.className = "auth-message success visible";
-    }, 1100);
+    }, 1600);
 
   } catch (err) {
     const registerMessage = document.getElementById("registerMessage");
@@ -509,7 +518,7 @@ function logout() {
 
   document.getElementById("converterCard").classList.remove("active");
   document.getElementById("registerCard").classList.remove("active");
-  document.getElementById("loginCard").classList.add("active");
+  document.getElementById("loginStack").classList.add("active");
   document.getElementById("themeSwitch").checked = document.body.classList.contains("dark");
   document.getElementById("topBar").style.display = "none";
   document.getElementById("fileInput").value = "";
