@@ -7,22 +7,47 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: #f6f7f9;
+      background-image: radial-gradient(ellipse at 12% 18%, rgba(255, 224, 222, .74), transparent 34%), radial-gradient(ellipse at 88% 78%, rgba(255, 234, 218, .78), transparent 36%);
       margin: 0;
-      padding-top: 70px;
-      height: 100vh;
+      padding: 96px 20px 40px;
+      min-height: 100vh;
+      min-height: 100svh;
+      box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: #333;
+      color: #24262d;
+      position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
     }
+    .motion-scene { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .motion-glow { position: absolute; width: 360px; height: 360px; border-radius: 50%; background: rgba(255, 80, 69, .10); filter: blur(65px); animation: glowDrift 11s ease-in-out infinite alternate; }
+    .motion-glow.one { left: 4%; top: 20%; }
+    .motion-glow.two { right: 5%; bottom: 8%; background: rgba(255, 166, 91, .15); animation-delay: -5s; }
+    .file-float { position: absolute; width: 142px; height: 164px; padding: 16px; box-sizing: border-box; border: 1px solid rgba(255,255,255,.9); border-radius: 18px; background: rgba(255,255,255,.84); box-shadow: 0 22px 55px rgba(49,38,38,.10); backdrop-filter: blur(10px); animation: floatFile 7s ease-in-out infinite; }
+    .file-float.one { left: max(7%, calc(50% - 540px)); top: 25%; }
+    .file-float.two { right: max(8%, calc(50% - 540px)); top: 19%; animation-delay: -2.5s; }
+    .file-float.three { right: max(13%, calc(50% - 570px)); bottom: 12%; animation-delay: -4.5s; }
+    .file-badge { display: grid; place-items: center; width: 48px; height: 56px; border-radius: 11px; color: white; background: #ef4943; font-size: 11px; font-weight: 800; letter-spacing: .5px; }
+    .file-float.two .file-badge { background: #4988e8; }
+    .file-float.three .file-badge { background: #8a62d7; }
+    .file-lines { display: grid; gap: 7px; margin-top: 15px; }
+    .file-lines i { display: block; height: 5px; border-radius: 8px; background: #e8e9ed; }
+    .file-lines i:nth-child(2) { width: 76%; }
+    .file-lines i:nth-child(3) { width: 56%; }
     .card {
+      position: relative;
+      z-index: 2;
       background: #fff;
-      padding: 25px;
-      width: 350px;
-      margin-top: 20px;
-      border-radius: 10px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      padding: 30px;
+      width: min(100%, 390px);
+      box-sizing: border-box;
+      margin: 20px 0 0;
+      border: 1px solid rgba(31,35,45,.07);
+      border-radius: 18px;
+      box-shadow: 0 22px 60px rgba(31,35,45,.12);
       display: none;
       animation: fade 0.3s ease-in-out;
     }
@@ -31,7 +56,9 @@
     }
     h2 {
       text-align: center;
-      margin-bottom: 20px;
+      margin: 0 0 22px;
+      font-size: 27px;
+      letter-spacing: -.5px;
     }
     input, select, button {
       width: 100%;
@@ -218,9 +245,45 @@ input[type="file"] {
   box-sizing: border-box;
 }
 
+    /* Refined tool styling */
+    input, select, button { border-radius: 8px; border-color: #dfe1e6; }
+    input:focus, select:focus { outline: 3px solid rgba(239,73,67,.16); border-color: #ef4943; }
+    button { background: #e5322d; }
+    button:hover { background: #c92722; }
+    .switch input:checked + .slider { background-color: #e5322d; }
+    .auth-message { display: none; padding: 11px 12px; border-radius: 8px; margin: -8px 0 14px; text-align: center; font-size: 13px; line-height: 1.4; }
+    .auth-message.visible { display: block; }
+    .auth-message.success { color: #176b45; background: #e9f8ef; }
+    .auth-message.error { color: #a62824; background: #fff0ef; }
+    body.dark .card { border-color: rgba(255,255,255,.08); }
+    body.dark .file-float { background: rgba(31,41,51,.88); border-color: rgba(255,255,255,.12); }
+    body.dark .file-lines i { background: #3a4655; }
+    body.dark button { background: #e5322d; }
+    #welcomeUser { color: #343640; }
+    body.dark #welcomeUser { color: #e5e7eb; }
+    @keyframes floatFile { 0%, 100% { translate: 0 0; } 50% { translate: 0 -16px; } }
+    @keyframes glowDrift { from { translate: -12px 8px; scale: .92; } to { translate: 26px -18px; scale: 1.08; } }
+    @media (max-width: 700px) {
+      body { padding: 82px 16px 28px; }
+      .file-float { opacity: .55; scale: .78; }
+      .file-float.one { left: -25px; top: 12%; }
+      .file-float.two { right: -28px; top: 11%; }
+      .file-float.three { right: -18px; bottom: 5%; }
+      .card { padding: 26px 22px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
   </style>
 </head>
 <body>
+  <div class="motion-scene" aria-hidden="true">
+    <div class="motion-glow one"></div>
+    <div class="motion-glow two"></div>
+    <div class="file-float one"><div class="file-badge">PDF</div><div class="file-lines"><i></i><i></i><i></i></div></div>
+    <div class="file-float two"><div class="file-badge">DOCX</div><div class="file-lines"><i></i><i></i><i></i></div></div>
+    <div class="file-float three"><div class="file-badge">AUDIO</div><div class="file-lines"><i></i><i></i><i></i></div></div>
+  </div>
   
   <!-- 🌐 Top Bar -->
 <div id="topBar">
@@ -239,6 +302,7 @@ input[type="file"] {
   <!-- Login Page -->
   <div class="card active" id="loginCard">
     <h2>Login</h2>
+    <p class="auth-message" id="loginMessage" role="status" aria-live="polite"></p>
     <input type="text" id="username" placeholder="Username" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
@@ -251,6 +315,7 @@ input[type="file"] {
    <!-- Register Page -->
 <div class="card" id="registerCard">
   <h2>Register</h2>
+  <p class="auth-message" id="registerMessage" role="status" aria-live="polite"></p>
   <input type="text" id="registerUsername" placeholder="Username" />
   <input type="password" id="registerPassword" placeholder="Password" />
   <button onclick="register()">Register</button>
@@ -263,7 +328,7 @@ input[type="file"] {
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
-    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg,.webp,.mp3,.m4a"/>
+    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp,.mp3,.m4a"/>
     <select id="format">
       <option value="txt_to_pdf">TXT → PDF</option>
       <option value="txt_to_docx">TXT → DOCX</option>
@@ -274,9 +339,13 @@ input[type="file"] {
       <option value="jpeg_to_png">JPEG to PNG</option>
       <option value="png_to_jpeg">PNG to JPEG</option>
       <option value="webp_to_jpeg">WEBP to JPEG</option>
+      <option value="webp_to_png">WEBP to PNG</option>
       <option value="mp3_to_m4a">MP3 to M4A</option>
       <option value="mp3_to_wav">MP3 to WAV</option>
+      <option value="mp3_to_flac">MP3 to FLAC</option>
       <option value="m4a_to_wav">M4A to WAV</option>
+      <option value="docx_to_pdf">DOCX to PDF</option>
+      <option value="pptx_to_pdf">PPTX to PDF</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
     <div id="status" class="note"></div>
@@ -297,9 +366,13 @@ const extMap = {
   jpeg_to_png: "png",
   png_to_jpeg: "jpeg",
   webp_to_jpeg: "jpeg",
+  webp_to_png: "png",
   mp3_to_m4a: "m4a",
   mp3_to_wav: "wav",
-  m4a_to_wav: "wav"
+  mp3_to_flac: "flac",
+  m4a_to_wav: "wav",
+  docx_to_pdf: "pdf",
+  pptx_to_pdf: "pdf"
 };
 
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
@@ -312,14 +385,14 @@ if (savedTheme === "dark") {
 }
 
 // ✅ auto-login check
-  if (localStorage.getItem("loggedIn") === "true") {
-    document.getElementById("loginCard").classList.remove("active");
-    document.getElementById("registerCard").classList.remove("active");
-    document.getElementById("converterCard").classList.add("active");
-    document.getElementById("topBar").style.display = "flex";
-    document.getElementById("welcomeUser").textContent =
-      "Welcome, " + localStorage.getItem("username");
-  }
+  // Require a fresh login whenever the site is opened or refreshed.
+  localStorage.removeItem("token");
+  localStorage.removeItem("loggedIn");
+  localStorage.removeItem("username");
+  document.getElementById("converterCard").classList.remove("active");
+  document.getElementById("registerCard").classList.remove("active");
+  document.getElementById("loginCard").classList.add("active");
+  document.getElementById("topBar").style.display = "none";
 });
 
 // 🌗 Dark / Light mode toggle
@@ -334,6 +407,8 @@ function toggleTheme() {
 function showRegister() {
   document.getElementById("username").value = "";
   document.getElementById("password").value = "";
+  document.getElementById("loginMessage").className = "auth-message";
+  document.getElementById("registerMessage").className = "auth-message";
   document.getElementById("loginCard").classList.remove("active");
   document.getElementById("registerCard").classList.add("active");
 }
@@ -341,6 +416,8 @@ function showRegister() {
 function showLogin() {
   document.getElementById("registerUsername").value = "";
   document.getElementById("registerPassword").value = "";
+  document.getElementById("loginMessage").className = "auth-message";
+  document.getElementById("registerMessage").className = "auth-message";
   document.getElementById("registerCard").classList.remove("active");
   document.getElementById("loginCard").classList.add("active");
 }
@@ -376,6 +453,7 @@ async function login() {
     document.getElementById("password").value = "";
     document.getElementById("fileInput").value = "";
     document.getElementById("status").textContent = "";
+    document.getElementById("loginMessage").className = "auth-message";
   } catch (err) {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedIn");
@@ -403,13 +481,23 @@ async function register() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
 
-    alert("Registration successful. Please login.");
-    document.getElementById("registerUsername").value = "";
-    document.getElementById("registerPassword").value = "";
-    showLogin(); 
+    const registerMessage = document.getElementById("registerMessage");
+    const registerButton = document.querySelector("#registerCard button");
+    registerMessage.textContent = "Registration successful. Redirecting to login...";
+    registerMessage.className = "auth-message success visible";
+    registerButton.disabled = true;
+    setTimeout(() => {
+      registerButton.disabled = false;
+      showLogin();
+      const loginMessage = document.getElementById("loginMessage");
+      loginMessage.textContent = "Registration successful. Please log in.";
+      loginMessage.className = "auth-message success visible";
+    }, 1100);
 
   } catch (err) {
-    alert("Registration failed: " + (err.message || "Unable to reach the server"));
+    const registerMessage = document.getElementById("registerMessage");
+    registerMessage.textContent = "Registration failed: " + (err.message || "Unable to reach the server");
+    registerMessage.className = "auth-message error visible";
   }
 }
 
@@ -450,6 +538,7 @@ async function convertFile() {
   const allowedTypes = [
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "text/plain",
     "image/png",
     "image/jpeg",
@@ -463,7 +552,7 @@ async function convertFile() {
   const maxSize = 40 * 1024 * 1024; // 40 MB
 
   if (!allowedTypes.includes(file.type)) {
-    alert("Invalid file type. Upload PDF, DOCX, TXT, JPG, JPEG, PNG, WEBP, MP3 or M4A.");
+    alert("Invalid file type. Upload PDF, DOCX, PPTX, TXT, JPG, JPEG, PNG, WEBP, MP3 or M4A.");
     return;
   }
 
