@@ -327,7 +327,7 @@ function showLogin() {
 
 async function login() {
   const user = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
+  const pass = document.getElementById("password").value;
 
   if (!user || !pass) {
     alert("Enter username and password");
@@ -339,12 +339,13 @@ async function login() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username: user, password: pass })
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
+    if (!data.token) throw new Error("The server did not return a login token");
+
     localStorage.setItem("token", data.token);
     localStorage.setItem("username", user);
     localStorage.setItem("loggedIn", "true");
-  
-    if (!res.ok) throw new Error(data.message);
    
     document.getElementById("welcomeUser").textContent = "Welcome, " + user;
     document.getElementById("logoutBtn").style.display = "block";
@@ -354,13 +355,16 @@ async function login() {
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
   } catch (err) {
-    alert("Login failed: " + err.message);
+    localStorage.removeItem("token");
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("username");
+    alert("Login failed: " + (err.message || "Unable to reach the server"));
   }
 }
 
 async function register() {
   const user = document.getElementById("registerUsername").value.trim();
-  const pass = document.getElementById("registerPassword").value.trim();
+  const pass = document.getElementById("registerPassword").value;
 
   if (!user || !pass) {
     alert("Enter username and password");
@@ -374,8 +378,8 @@ async function register() {
       body: JSON.stringify({ username: user, password: pass })
     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
 
     alert("Registration successful. Please login.");
     document.getElementById("registerUsername").value = "";
@@ -383,7 +387,7 @@ async function register() {
     showLogin(); 
 
   } catch (err) {
-    alert("Registration failed: " + err.message);
+    alert("Registration failed: " + (err.message || "Unable to reach the server"));
   }
 }
 
