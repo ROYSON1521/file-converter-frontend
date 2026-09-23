@@ -261,13 +261,17 @@ input[type="file"] {
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
-    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg"/>
+    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg,.webp"/>
     <select id="format">
       <option value="txt_to_pdf">TXT → PDF</option>
       <option value="txt_to_docx">TXT → DOCX</option>
       <option value="pdf_to_txt">PDF → TXT</option>
       <option value="docx_to_txt">DOCX → TXT</option>
       <option value="pdf_to_docx">PDF → DOCX</option>
+      <option value="jpg_to_png">JPG to PNG</option>
+      <option value="jpeg_to_png">JPEG to PNG</option>
+      <option value="png_to_jpeg">PNG to JPEG</option>
+      <option value="webp_to_jpeg">WEBP to JPEG</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
     <div id="status" class="note"></div>
@@ -283,7 +287,11 @@ const extMap = {
   txt_to_docx: "docx",
   pdf_to_txt: "txt",
   docx_to_txt: "txt",
-  pdf_to_docx: "docx"
+  pdf_to_docx: "docx",
+  jpg_to_png: "png",
+  jpeg_to_png: "png",
+  png_to_jpeg: "jpeg",
+  webp_to_jpeg: "jpeg"
 };
 
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
@@ -432,13 +440,14 @@ async function convertFile() {
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "text/plain",
     "image/png",
-    "image/jpeg"
+    "image/jpeg",
+    "image/webp"
   ];
 
   const maxSize = 5 * 1024 * 1024; // 5MB
 
   if (!allowedTypes.includes(file.type)) {
-    alert("Invalid file type. Upload PDF, DOCX, TXT, JPG or PNG.");
+    alert("Invalid file type. Upload PDF, DOCX, TXT, JPG, JPEG, PNG or WEBP.");
     return;
   }
 
