@@ -108,9 +108,11 @@ body.dark .note {
 
 .switch {
   position: relative;
-  width: 64px;
-  height: 32px;
-  margin-right: 10px;
+  display: inline-block;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 30px;
+  margin-right: 0;
 }
 
 .switch input {
@@ -131,8 +133,8 @@ body.dark .note {
 .slider::before {
   content: "🥵";
   position: absolute;
-  height: 28px;
-  width: 28px;
+  height: 26px;
+  width: 26px;
   left: 2px;
   bottom: 2px;
   background-color: white;
@@ -141,7 +143,7 @@ body.dark .note {
   align-items: center;
   justify-content: center;
   transition: transform 0.3s;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /* checked = dark mode */
@@ -150,7 +152,7 @@ body.dark .note {
 }
 
 .switch input:checked + .slider::before {
-  transform: translateX(32px);
+  transform: translateX(26px);
   content: "🥶";
 }
 /* 🌐 Top bar */
@@ -261,7 +263,7 @@ input[type="file"] {
   <!-- File Converter Page -->
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
-    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg,.webp"/>
+    <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg,.webp,.mp3,.m4a"/>
     <select id="format">
       <option value="txt_to_pdf">TXT → PDF</option>
       <option value="txt_to_docx">TXT → DOCX</option>
@@ -272,6 +274,9 @@ input[type="file"] {
       <option value="jpeg_to_png">JPEG to PNG</option>
       <option value="png_to_jpeg">PNG to JPEG</option>
       <option value="webp_to_jpeg">WEBP to JPEG</option>
+      <option value="mp3_to_m4a">MP3 to M4A</option>
+      <option value="mp3_to_wav">MP3 to WAV</option>
+      <option value="m4a_to_wav">M4A to WAV</option>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
     <div id="status" class="note"></div>
@@ -291,7 +296,10 @@ const extMap = {
   jpg_to_png: "png",
   jpeg_to_png: "png",
   png_to_jpeg: "jpeg",
-  webp_to_jpeg: "jpeg"
+  webp_to_jpeg: "jpeg",
+  mp3_to_m4a: "m4a",
+  mp3_to_wav: "wav",
+  m4a_to_wav: "wav"
 };
 
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
@@ -441,18 +449,22 @@ async function convertFile() {
     "text/plain",
     "image/png",
     "image/jpeg",
-    "image/webp"
+    "image/webp",
+    "audio/mpeg",
+    "audio/mp4",
+    "audio/x-m4a",
+    "audio/m4a"
   ];
 
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  const maxSize = 40 * 1024 * 1024; // 40 MB
 
   if (!allowedTypes.includes(file.type)) {
-    alert("Invalid file type. Upload PDF, DOCX, TXT, JPG, JPEG, PNG or WEBP.");
+    alert("Invalid file type. Upload PDF, DOCX, TXT, JPG, JPEG, PNG, WEBP, MP3 or M4A.");
     return;
   }
 
   if (file.size > maxSize) {
-    alert("File size exceeds 5MB limit.");
+    alert("File size exceeds the 40 MB limit.");
     return;
   }
 
