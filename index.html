@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>File Converter App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -255,6 +258,36 @@ input[type="file"] {
     /* Refined tool styling */
     input, select, button { border-radius: 8px; border-color: #dfe1e6; }
     input:focus, select:focus { outline: 3px solid rgba(239,73,67,.16); border-color: #ef4943; }
+    #format {
+      appearance: none;
+      -webkit-appearance: none;
+      min-height: 50px;
+      padding: 12px 46px 12px 14px;
+      border: 1px solid #e1e3e9;
+      border-radius: 12px;
+      color: #292b33;
+      background-color: #fff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23e03b35' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 18px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 5px 16px rgba(35,38,48,.06);
+      cursor: pointer;
+      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+    #format:hover { border-color: #ef7771; box-shadow: 0 8px 22px rgba(225,58,52,.10); }
+    #format:focus { outline: 3px solid rgba(239,73,67,.17); border-color: #e03b35; }
+    #format option, #format optgroup { color: #292b33; background: #fff; }
+    body.dark #format {
+      color: #e5e7eb;
+      background-color: #111827;
+      border-color: #374151;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23fb817b' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+      box-shadow: 0 5px 16px rgba(0,0,0,.18);
+    }
+    body.dark #format option, body.dark #format optgroup { color: #e5e7eb; background: #111827; }
     button { background: #e5322d; }
     button:hover { background: #c92722; }
     .switch input:checked + .slider { background-color: #e5322d; }
@@ -282,6 +315,57 @@ input[type="file"] {
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+    /* Login-stage layout and distinct orbiting file tiles */
+    .login-stack.active { gap: 24px; }
+    .brand-title {
+      font-family: "Space Grotesk", "Arial Black", sans-serif;
+      font-size: clamp(44px, 6vw, 62px);
+      font-weight: 700;
+      letter-spacing: .13em;
+      line-height: 1;
+      background: linear-gradient(100deg, #bd2525 5%, #f04a3f 52%, #ff8657 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 8px 12px rgba(216,50,44,.18));
+    }
+    .brand-title::after {
+      content: "";
+      display: block;
+      width: 58%;
+      height: 4px;
+      margin: 13px auto 0;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #f04a3f, #ffb05b);
+    }
+    .file-float { border-radius: 20px; box-shadow: 0 20px 54px rgba(42,34,34,.12); }
+    .file-float.one { left: max(22px, calc(50% - 650px)); top: 17%; width: 150px; height: 174px; rotate: -9deg; }
+    .file-float.two { right: max(22px, calc(50% - 650px)); left: auto; top: 18%; width: 158px; height: 126px; border-radius: 24px 12px 24px 12px; rotate: 8deg; animation-duration: 8s; }
+    .file-float.three { left: max(65px, calc(50% - 680px)); right: auto; bottom: 15%; top: auto; width: 158px; height: 104px; border-radius: 52px; rotate: 6deg; animation-duration: 9s; }
+    .file-float.three .file-badge { width: 46px; height: 46px; border-radius: 50%; }
+    .file-float.three .file-lines { margin-top: 11px; }
+    .file-float.four { left: auto; right: max(65px, calc(50% - 680px)); bottom: 17%; width: 136px; height: 158px; border-radius: 30px 12px 30px 12px; rotate: -7deg; }
+    .file-float.four .file-badge { background: #ee8d35; }
+    .file-float.five { left: max(18px, calc(50% - 640px)); right: auto; top: 53%; bottom: auto; width: 118px; height: 118px; border-radius: 50%; display: grid; place-content: center; rotate: 10deg; animation-duration: 8.5s; }
+    .file-float.five .file-badge { width: 50px; height: 50px; border-radius: 15px; background: #16a18b; }
+    .file-float.five .file-lines { display: none; }
+    .file-float.six { left: auto; right: max(18px, calc(50% - 640px)); top: 54%; bottom: auto; width: 164px; height: 94px; border-radius: 48px; display: flex; align-items: center; gap: 12px; rotate: -8deg; animation-duration: 9.5s; }
+    .file-float.six .file-badge { width: 52px; height: 52px; border-radius: 50%; background: #8056c9; }
+    .file-float.six .file-lines { flex: 1; margin: 0; }
+    .file-float.one { animation-delay: -1s; }
+    .file-float.two { animation-delay: -3s; }
+    .file-float.three { animation-delay: -5s; }
+    .file-float.four { animation-delay: -2s; }
+    .file-float.five { animation-delay: -4s; }
+    .file-float.six { animation-delay: -6s; }
+    @media (max-width: 700px) {
+      .brand-title { font-size: clamp(38px, 10vw, 50px); letter-spacing: .1em; }
+      .login-stack.active { gap: 18px; }
+      .file-float.four, .file-float.five, .file-float.six { display: none; }
+      .file-float.one { left: -25px; top: 11%; }
+      .file-float.two { right: -30px; top: 12%; }
+      .file-float.three { left: -34px; bottom: 7%; }
     }
   </style>
 </head>
@@ -344,22 +428,28 @@ input[type="file"] {
     <h2>File Converter</h2>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp,.mp3,.m4a"/>
     <select id="format">
+      <optgroup label="Documents">
       <option value="txt_to_pdf">TXT → PDF</option>
       <option value="txt_to_docx">TXT → DOCX</option>
       <option value="pdf_to_txt">PDF → TXT</option>
       <option value="docx_to_txt">DOCX → TXT</option>
       <option value="pdf_to_docx">PDF → DOCX</option>
+      <option value="docx_to_pdf">DOCX to PDF</option>
+      <option value="pptx_to_pdf">PPTX to PDF</option>
+      </optgroup>
+      <optgroup label="Images">
       <option value="jpg_to_png">JPG to PNG</option>
       <option value="jpeg_to_png">JPEG to PNG</option>
       <option value="png_to_jpeg">PNG to JPEG</option>
       <option value="webp_to_jpeg">WEBP to JPEG</option>
       <option value="webp_to_png">WEBP to PNG</option>
+      </optgroup>
+      <optgroup label="Audio">
       <option value="mp3_to_m4a">MP3 to M4A</option>
       <option value="mp3_to_wav">MP3 to WAV</option>
       <option value="mp3_to_flac">MP3 to FLAC</option>
       <option value="m4a_to_wav">M4A to WAV</option>
-      <option value="docx_to_pdf">DOCX to PDF</option>
-      <option value="pptx_to_pdf">PPTX to PDF</option>
+      </optgroup>
     </select>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
     <div id="status" class="note"></div>
