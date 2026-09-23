@@ -316,11 +316,15 @@ function toggleTheme() {
 
 // 🔁 STEP 2: page switching logic
 function showRegister() {
+  document.getElementById("username").value = "";
+  document.getElementById("password").value = "";
   document.getElementById("loginCard").classList.remove("active");
   document.getElementById("registerCard").classList.add("active");
 }
 
 function showLogin() {
+  document.getElementById("registerUsername").value = "";
+  document.getElementById("registerPassword").value = "";
   document.getElementById("registerCard").classList.remove("active");
   document.getElementById("loginCard").classList.add("active");
 }
