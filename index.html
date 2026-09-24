@@ -321,6 +321,7 @@ body.dark input[type="file"]::file-selector-button {
     .password-field { position: relative; width: 100%; margin: 10px 0; }
     .password-field input { margin: 0; padding-right: 76px; }
     .password-toggle { position: absolute; top: 50%; right: 9px; width: auto; margin: 0; padding: 6px 9px; transform: translateY(-50%); border: 0; border-radius: 7px; background: transparent; color: #bd302b; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .password-toggle[hidden] { display: none; }
     .password-toggle:hover { background: rgba(229,50,45,.09); }
     .password-hint { display: block; margin: -4px 0 8px; color: #6b7280; text-align: left; font-size: 12px; }
     .conversion-hint { margin: -2px 0 8px; color: #656b78; font-size: 12px; text-align: left; }
@@ -439,7 +440,7 @@ body.dark input[type="file"]::file-selector-button {
     <h2>Login</h2>
     <p class="auth-message" id="loginMessage" role="status" aria-live="polite"></p>
     <input type="text" id="username" placeholder="Username" />
-    <div class="password-field"><input type="password" id="password" placeholder="Password" autocomplete="current-password" /><button class="password-toggle" type="button" onclick="togglePassword('password', this)" aria-controls="password" aria-pressed="false">Show</button></div>
+    <div class="password-field"><input type="password" id="password" placeholder="Password" autocomplete="current-password" /><button class="password-toggle" id="loginPasswordToggle" type="button" onclick="togglePassword('password', this)" aria-controls="password" aria-pressed="false" hidden>Show</button></div>
     <button id="loginBtn" onclick="login()">Login</button>
      <p class="note">
     Don’t have an account?
@@ -554,6 +555,7 @@ if (savedTheme === "dark") {
   document.getElementById("loginStack").classList.add("active");
   document.getElementById("topBar").style.display = "none";
   document.getElementById("fileInput").addEventListener("change", updateAvailableConversions);
+  document.getElementById("password").addEventListener("input", updateLoginPasswordToggle);
   lockConversions();
 });
 
@@ -590,6 +592,17 @@ function togglePassword(inputId, button) {
   input.type = showing ? "text" : "password";
   button.textContent = showing ? "Hide" : "Show";
   button.setAttribute("aria-pressed", String(showing));
+}
+
+function updateLoginPasswordToggle() {
+  const password = document.getElementById("password");
+  const button = document.getElementById("loginPasswordToggle");
+  button.hidden = password.value.length === 0;
+  if (button.hidden && password.type === "text") {
+    password.type = "password";
+    button.textContent = "Show";
+    button.setAttribute("aria-pressed", "false");
+  }
 }
 
 function setAuthMessage(id, message, kind = "error") {
@@ -660,13 +673,16 @@ async function login() {
     localStorage.setItem("username", user);
     localStorage.setItem("loggedIn", "true");
    
-    document.getElementById("welcomeUser").textContent = "Welcome, " + user;
+    const welcomeEmojis = ["✨", "🌟", "🚀", "🎉", "🌈", "🪄", "💫", "🎨"];
+    const welcomeEmoji = welcomeEmojis[Math.floor(Math.random() * welcomeEmojis.length)];
+    document.getElementById("welcomeUser").textContent = `Welcome, ${user} ${welcomeEmoji}`;
     document.getElementById("logoutBtn").style.display = "block";
     document.getElementById("loginStack").classList.remove("active");
     document.getElementById("converterCard").classList.add("active");
     document.getElementById("topBar").style.display = "flex";
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
+    updateLoginPasswordToggle();
     document.getElementById("fileInput").value = "";
     document.getElementById("status").textContent = "";
     document.getElementById("loginMessage").className = "auth-message";
@@ -742,6 +758,8 @@ function logout() {
   document.getElementById("topBar").style.display = "none";
   document.getElementById("fileInput").value = "";
   document.getElementById("status").textContent = "";
+  document.getElementById("password").value = "";
+  updateLoginPasswordToggle();
   lockConversions();
 }
 
@@ -836,7 +854,7 @@ async function convertFile() {
     fileInput.disabled = false;
     btn.disabled = false;
     logoutBtn.disabled = false;
-    status.textContent = "Conversion failed: " + (error.message || "Please try again.");
+    status.textContent = "Conversion failed ❌";
   }
 }
   </script>
