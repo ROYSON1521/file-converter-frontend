@@ -295,6 +295,16 @@ input[type="file"] {
     .auth-message.visible { display: block; }
     .auth-message.success { color: #176b45; background: #e9f8ef; }
     .auth-message.error { color: #a62824; background: #fff0ef; }
+    .password-field { position: relative; width: 100%; margin: 10px 0; }
+    .password-field input { margin: 0; padding-right: 76px; }
+    .password-toggle { position: absolute; top: 50%; right: 9px; width: auto; margin: 0; padding: 6px 9px; transform: translateY(-50%); border: 0; border-radius: 7px; background: transparent; color: #bd302b; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .password-toggle:hover { background: rgba(229,50,45,.09); }
+    .password-hint { display: block; margin: -4px 0 8px; color: #6b7280; text-align: left; font-size: 12px; }
+    .conversion-hint { margin: -2px 0 8px; color: #656b78; font-size: 12px; text-align: left; }
+    #format:disabled { opacity: .65; cursor: not-allowed; }
+    #format option:disabled { color: #9ca3af; }
+    body.dark .password-toggle { color: #ff918b; }
+    body.dark .password-hint, body.dark .conversion-hint { color: #aab2c0; }
     body.dark .card { border-color: rgba(255,255,255,.08); }
     body.dark .file-float { background: rgba(31,41,51,.88); border-color: rgba(255,255,255,.12); }
     body.dark .file-lines i { background: #3a4655; }
@@ -400,9 +410,10 @@ input[type="file"] {
   <h1 class="brand-title">FILERALUV</h1>
   <div class="card active" id="loginCard">
     <h2>Login</h2>
+    <p class="auth-message" id="loginMessage" role="status" aria-live="polite"></p>
     <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
+    <div class="password-field"><input type="password" id="password" placeholder="Password" autocomplete="current-password" /><button class="password-toggle" type="button" onclick="togglePassword('password', this)" aria-controls="password" aria-pressed="false">Show</button></div>
+    <button id="loginBtn" onclick="login()">Login</button>
      <p class="note">
     Don’t have an account?
     <a href="#" onclick="showRegister()">Register</a>
@@ -415,8 +426,9 @@ input[type="file"] {
   <h2>Register</h2>
   <p class="auth-message" id="registerMessage" role="status" aria-live="polite"></p>
   <input type="text" id="registerUsername" placeholder="Username" />
-  <input type="password" id="registerPassword" placeholder="Password" />
-  <button onclick="register()">Register</button>
+  <div class="password-field"><input type="password" id="registerPassword" placeholder="Password" autocomplete="new-password" minlength="8" /><button class="password-toggle" type="button" onclick="togglePassword('registerPassword', this)" aria-controls="registerPassword" aria-pressed="false">Show</button></div>
+  <small class="password-hint">Use at least 8 characters for your password.</small>
+  <button id="registerBtn" onclick="register()">Register</button>
   <p class="note">
     Already have an account?
     <a href="#" onclick="showLogin()">Login</a>
@@ -427,7 +439,7 @@ input[type="file"] {
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp,.mp3,.m4a"/>
-    <select id="format">
+    <select id="format" disabled>
       <optgroup label="Documents">
       <option value="txt_to_pdf">TXT → PDF</option>
       <option value="txt_to_docx">TXT → DOCX</option>
@@ -451,6 +463,7 @@ input[type="file"] {
       <option value="m4a_to_wav">M4A to WAV</option>
       </optgroup>
     </select>
+    <p id="conversionHint" class="conversion-hint" aria-live="polite">Choose a file to see the conversions available for its type.</p>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
     <div id="status" class="note"></div>
     
@@ -478,6 +491,18 @@ const extMap = {
   docx_to_pdf: "pdf",
   pptx_to_pdf: "pdf"
 };
+const conversionsByExtension = {
+  txt: ["txt_to_pdf", "txt_to_docx"],
+  pdf: ["pdf_to_txt", "pdf_to_docx"],
+  docx: ["docx_to_txt", "docx_to_pdf"],
+  pptx: ["pptx_to_pdf"],
+  jpg: ["jpg_to_png"],
+  jpeg: ["jpeg_to_png"],
+  png: ["png_to_jpeg"],
+  webp: ["webp_to_jpeg", "webp_to_png"],
+  mp3: ["mp3_to_m4a", "mp3_to_wav", "mp3_to_flac"],
+  m4a: ["m4a_to_wav"]
+};
 
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
 window.addEventListener("DOMContentLoaded", () => {
@@ -498,6 +523,8 @@ if (savedTheme === "dark") {
   document.getElementById("loginCard").classList.add("active");
   document.getElementById("loginStack").classList.add("active");
   document.getElementById("topBar").style.display = "none";
+  document.getElementById("fileInput").addEventListener("change", updateAvailableConversions);
+  lockConversions();
 });
 
 // 🌗 Dark / Light mode toggle
@@ -513,6 +540,7 @@ function showRegister() {
   document.getElementById("username").value = "";
   document.getElementById("password").value = "";
   document.getElementById("registerMessage").className = "auth-message";
+  document.getElementById("loginMessage").className = "auth-message";
   document.getElementById("loginStack").classList.remove("active");
   document.getElementById("registerCard").classList.add("active");
 }
@@ -521,8 +549,63 @@ function showLogin() {
   document.getElementById("registerUsername").value = "";
   document.getElementById("registerPassword").value = "";
   document.getElementById("registerMessage").className = "auth-message";
+  document.getElementById("loginMessage").className = "auth-message";
   document.getElementById("registerCard").classList.remove("active");
   document.getElementById("loginStack").classList.add("active");
+}
+
+function togglePassword(inputId, button) {
+  const input = document.getElementById(inputId);
+  const showing = input.type === "password";
+  input.type = showing ? "text" : "password";
+  button.textContent = showing ? "Hide" : "Show";
+  button.setAttribute("aria-pressed", String(showing));
+}
+
+function setAuthMessage(id, message, kind = "error") {
+  const element = document.getElementById(id);
+  element.textContent = message;
+  element.className = `auth-message ${kind} visible`;
+}
+
+function lockConversions() {
+  const select = document.getElementById("format");
+  const convertButton = document.getElementById("convertBtn");
+  [...select.options].forEach(option => { option.disabled = true; });
+  [...select.querySelectorAll("optgroup")].forEach(group => { group.disabled = true; });
+  select.selectedIndex = 0;
+  select.disabled = true;
+  convertButton.disabled = true;
+  document.getElementById("conversionHint").textContent = "Choose a file to see the conversions available for its type.";
+}
+
+function updateAvailableConversions() {
+  const file = document.getElementById("fileInput").files[0];
+  const select = document.getElementById("format");
+  const convertButton = document.getElementById("convertBtn");
+  const hint = document.getElementById("conversionHint");
+  const extension = file?.name.split(".").pop().toLowerCase();
+  const allowed = conversionsByExtension[extension] || [];
+
+  [...select.options].forEach(option => {
+    option.disabled = !allowed.includes(option.value);
+  });
+  [...select.querySelectorAll("optgroup")].forEach(group => {
+    group.disabled = ![...group.querySelectorAll("option")].some(option => !option.disabled);
+  });
+  if (!file || !allowed.length) {
+    select.disabled = true;
+    convertButton.disabled = true;
+    hint.textContent = file ? `No conversions are available for .${extension} files.` : "Choose a file to see the conversions available for its type.";
+    if (file) document.getElementById("status").textContent = `Unsupported file type: .${extension}`;
+    return;
+  }
+
+  select.value = allowed[0];
+  select.disabled = false;
+  convertButton.disabled = false;
+  hint.textContent = `${extension.toUpperCase()} detected · ${allowed.length} conversion${allowed.length === 1 ? "" : "s"} available. Other formats are locked.`;
+  document.getElementById("status").textContent = "";
 }
 
 async function login() {
@@ -530,7 +613,7 @@ async function login() {
   const pass = document.getElementById("password").value;
 
   if (!user || !pass) {
-    alert("Enter username and password");
+    setAuthMessage("loginMessage", "Enter your username and password.");
     return;
   }
   try {
@@ -556,11 +639,13 @@ async function login() {
     document.getElementById("password").value = "";
     document.getElementById("fileInput").value = "";
     document.getElementById("status").textContent = "";
+    document.getElementById("loginMessage").className = "auth-message";
+    lockConversions();
   } catch (err) {
     localStorage.removeItem("token");
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("username");
-    alert("Login failed: " + (err.message || "Unable to reach the server"));
+    setAuthMessage("loginMessage", "Login failed: " + (err.message || "Unable to reach the server"));
   }
 }
 
@@ -569,7 +654,11 @@ async function register() {
   const pass = document.getElementById("registerPassword").value;
 
   if (!user || !pass) {
-    alert("Enter username and password");
+    setAuthMessage("registerMessage", "Enter your username and password.");
+    return;
+  }
+  if (pass.length < 8) {
+    setAuthMessage("registerMessage", "Your password must be at least 8 characters long.");
     return;
   }
 
@@ -584,7 +673,7 @@ async function register() {
     if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
 
     const registerMessage = document.getElementById("registerMessage");
-    const registerButton = document.querySelector("#registerCard button");
+    const registerButton = document.getElementById("registerBtn");
     registerMessage.textContent = "Registration successful. You can log in now. Redirecting...";
     registerMessage.className = "auth-message success visible";
     registerButton.disabled = true;
@@ -613,12 +702,13 @@ function logout() {
   document.getElementById("topBar").style.display = "none";
   document.getElementById("fileInput").value = "";
   document.getElementById("status").textContent = "";
+  lockConversions();
 }
 
 async function convertFile() {
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("Session expired. Please login again.");
+        setAuthMessage("loginMessage", "Your session expired. Please log in again.");
         logout();
      return;
     }
@@ -626,7 +716,7 @@ async function convertFile() {
 
   // ✅ 1. Check if file exists FIRST
   if (!fileInput.files.length) {
-    alert("Please select a file");
+    document.getElementById("status").textContent = "Please select a file.";
     return;
   }
 
@@ -634,33 +724,24 @@ async function convertFile() {
   const originalName = file.name.split(".").slice(0, -1).join(".");
 
   // ✅ 2. File validation
-  const allowedTypes = [
-    "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "text/plain",
-    "image/png",
-    "image/jpeg",
-    "image/webp",
-    "audio/mpeg",
-    "audio/mp4",
-    "audio/x-m4a",
-    "audio/m4a"
-  ];
-
   const maxSize = 40 * 1024 * 1024; // 40 MB
+  const extension = file.name.split(".").pop().toLowerCase();
 
-  if (!allowedTypes.includes(file.type)) {
-    alert("Invalid file type. Upload PDF, DOCX, PPTX, TXT, JPG, JPEG, PNG, WEBP, MP3 or M4A.");
+  if (!conversionsByExtension[extension]) {
+    document.getElementById("status").textContent = "Unsupported file type. Choose a supported file.";
     return;
   }
 
   if (file.size > maxSize) {
-    alert("File size exceeds the 40 MB limit.");
+    document.getElementById("status").textContent = "File size exceeds the 40 MB limit.";
     return;
   }
 
   const format = document.getElementById('format').value;
+  if (!conversionsByExtension[extension].includes(format)) {
+    document.getElementById("status").textContent = "Choose a conversion available for this file type.";
+    return;
+  }
 
   // ✅ 3. Send to backend
   // STEP 2: show spinner + disable button
@@ -703,6 +784,7 @@ async function convertFile() {
     a.remove();
     window.URL.revokeObjectURL(url);
     fileInput.value = "";
+    lockConversions();
     // STEP 3: success message + enable button
     status.textContent = "Conversion successful ✅";
     fileInput.disabled = false;
@@ -714,7 +796,7 @@ async function convertFile() {
     fileInput.disabled = false;
     btn.disabled = false;
     logoutBtn.disabled = false;
-    alert("Error: " + error.message);
+    status.textContent = "Conversion failed: " + (error.message || "Please try again.");
   }
 }
   </script>
