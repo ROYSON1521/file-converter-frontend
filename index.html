@@ -109,7 +109,7 @@ body, .card, input, select, button {
 
 /* 🌙 Dark mode styles */
 body.dark {
-  background: linear-gradient(135deg, #1f2933, #111827);
+  background: radial-gradient(ellipse at 16% 18%, rgba(93, 70, 153, .24), transparent 38%), radial-gradient(ellipse at 88% 78%, rgba(24, 119, 122, .18), transparent 40%), linear-gradient(135deg, #171923, #0b1020);
   color: #e5e7eb;
 }
 
@@ -246,13 +246,36 @@ body.dark #logoutBtn {
 /* 📁 File input resized & aligned */
 input[type="file"] {
   width: 100%;
-  height: 42px;                 
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: #f9fafb;
+  min-height: 54px;
+  padding: 7px;
+  border: 1px solid #e3e6ee;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff, #f4f6fb);
   font-size: 14px;
   cursor: pointer;
   box-sizing: border-box;
+  box-shadow: 0 8px 20px rgba(30, 41, 59, .07);
+}
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 11px;
+  color: #fff;
+  background: linear-gradient(135deg, #e94a43, #c92e38);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+input[type="file"]::file-selector-button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+body.dark input[type="file"] {
+  color: #dce4f2;
+  border-color: #39445d;
+  background: linear-gradient(145deg, #171d2c, #111827);
+  box-shadow: 0 10px 26px rgba(0,0,0,.25);
+}
+body.dark input[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, #a34d72, #6950b5);
 }
 
     /* Refined tool styling */
@@ -307,6 +330,10 @@ input[type="file"] {
     body.dark .password-hint, body.dark .conversion-hint { color: #aab2c0; }
     body.dark .card { border-color: rgba(255,255,255,.08); }
     body.dark .file-float { background: rgba(31,41,51,.88); border-color: rgba(255,255,255,.12); }
+    body.dark .motion-glow.one { background: rgba(130, 92, 206, .18); }
+    body.dark .motion-glow.two { background: rgba(45, 170, 167, .14); }
+    body.dark .motion-glow { animation-duration: 16s; opacity: .8; }
+    body.dark .file-float { box-shadow: 0 24px 60px rgba(0,0,0,.28); animation-duration: 9s; }
     body.dark .file-lines i { background: #3a4655; }
     body.dark button { background: #e5322d; }
     #welcomeUser { color: #343640; }
@@ -427,7 +454,7 @@ input[type="file"] {
   <p class="auth-message" id="registerMessage" role="status" aria-live="polite"></p>
   <input type="text" id="registerUsername" placeholder="Username" />
   <div class="password-field"><input type="password" id="registerPassword" placeholder="Password" autocomplete="new-password" minlength="8" /><button class="password-toggle" type="button" onclick="togglePassword('registerPassword', this)" aria-controls="registerPassword" aria-pressed="false">Show</button></div>
-  <small class="password-hint">Use at least 8 characters for your password.</small>
+  <small class="password-hint">Use at least 8 characters, including letters, numbers, and one symbol (#, _, or @). Only those symbols are allowed.</small>
   <button id="registerBtn" onclick="register()">Register</button>
   <p class="note">
     Already have an account?
@@ -439,6 +466,7 @@ input[type="file"] {
   <div class="card" id="converterCard">
     <h2>File Converter</h2>
     <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.pptx,.png,.jpg,.jpeg,.webp,.mp3,.m4a"/>
+    <p class="conversion-hint">Files up to 50 MB can be uploaded.</p>
     <select id="format" disabled>
       <optgroup label="Documents">
       <option value="txt_to_pdf">TXT → PDF</option>
@@ -463,7 +491,7 @@ input[type="file"] {
       <option value="m4a_to_wav">M4A to WAV</option>
       </optgroup>
     </select>
-    <p id="conversionHint" class="conversion-hint" aria-live="polite">Choose a file to see the conversions available for its type.</p>
+    <p id="conversionHint" class="conversion-hint" aria-live="polite"></p>
     <button id="convertBtn" onclick="convertFile()">Convert</button>
     <div id="status" class="note"></div>
     
@@ -506,6 +534,8 @@ const conversionsByExtension = {
 
 // 🔒 Bonus fix: auto-login after refresh (DOM safe)
 window.addEventListener("DOMContentLoaded", () => {
+  // Wake a sleeping free-tier backend while the user is on the login page.
+  fetch(REGISTER_API.replace(/\/register$/, "/health"), { cache: "no-store" }).catch(() => {});
   // 🌗 sync theme toggle
    const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") {
@@ -576,7 +606,7 @@ function lockConversions() {
   select.selectedIndex = 0;
   select.disabled = true;
   convertButton.disabled = true;
-  document.getElementById("conversionHint").textContent = "Choose a file to see the conversions available for its type.";
+  document.getElementById("conversionHint").textContent = "";
 }
 
 function updateAvailableConversions() {
@@ -596,7 +626,7 @@ function updateAvailableConversions() {
   if (!file || !allowed.length) {
     select.disabled = true;
     convertButton.disabled = true;
-    hint.textContent = file ? `No conversions are available for .${extension} files.` : "Choose a file to see the conversions available for its type.";
+    hint.textContent = file ? `No conversions are available for .${extension} files.` : "";
     if (file) document.getElementById("status").textContent = `Unsupported file type: .${extension}`;
     return;
   }
@@ -652,17 +682,25 @@ async function login() {
 async function register() {
   const user = document.getElementById("registerUsername").value.trim();
   const pass = document.getElementById("registerPassword").value;
+  const registerButton = document.getElementById("registerBtn");
 
   if (!user || !pass) {
     setAuthMessage("registerMessage", "Enter your username and password.");
     return;
   }
   if (pass.length < 8) {
-    setAuthMessage("registerMessage", "Your password must be at least 8 characters long.");
+    setAuthMessage("registerMessage", "Use at least 8 characters, including letters, numbers, and one symbol (#, _, or @).");
+    return;
+  }
+  if (!/^[A-Za-z0-9#_@]+$/.test(pass) || !/[A-Za-z]/.test(pass) || !/[0-9]/.test(pass) || !/[#_@]/.test(pass)) {
+    setAuthMessage("registerMessage", "Password needs letters, numbers, and one of these symbols: #, _, @. Other symbols are not allowed.");
     return;
   }
 
   try {
+    registerButton.disabled = true;
+    registerButton.textContent = "Creating account…";
+    setAuthMessage("registerMessage", "Creating your account…", "success");
     const res = await fetch(REGISTER_API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -673,19 +711,21 @@ async function register() {
     if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
 
     const registerMessage = document.getElementById("registerMessage");
-    const registerButton = document.getElementById("registerBtn");
     registerMessage.textContent = "Registration successful. You can log in now. Redirecting...";
     registerMessage.className = "auth-message success visible";
-    registerButton.disabled = true;
+    registerButton.textContent = "Registered";
     setTimeout(() => {
       registerButton.disabled = false;
+      registerButton.textContent = "Register";
       showLogin();
-    }, 1600);
+    }, 700);
 
   } catch (err) {
     const registerMessage = document.getElementById("registerMessage");
     registerMessage.textContent = "Registration failed: " + (err.message || "Unable to reach the server");
     registerMessage.className = "auth-message error visible";
+    registerButton.disabled = false;
+    registerButton.textContent = "Register";
   }
 }
 
@@ -724,7 +764,7 @@ async function convertFile() {
   const originalName = file.name.split(".").slice(0, -1).join(".");
 
   // ✅ 2. File validation
-  const maxSize = 40 * 1024 * 1024; // 40 MB
+  const maxSize = 50 * 1024 * 1024; // 50 MB
   const extension = file.name.split(".").pop().toLowerCase();
 
   if (!conversionsByExtension[extension]) {
@@ -733,7 +773,7 @@ async function convertFile() {
   }
 
   if (file.size > maxSize) {
-    document.getElementById("status").textContent = "File size exceeds the 40 MB limit.";
+    document.getElementById("status").textContent = "File size exceeds the 50 MB limit.";
     return;
   }
 
